@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./scripts/quality-gate.sh)",
+      "Bash(./scripts/quality-gate.sh full)",
+      "Bash(./scripts/check-spec.py:*)",
+      "Bash(./scripts/acceptance-lock.sh:*)",
+      "Bash(npx stryker run)",
+      "Bash(git status)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git switch:*)",
+      "Bash(git checkout -b:*)"
+    ],
+    "deny": [
+      "Bash(git push:*)"
+    ]
+  }
+}

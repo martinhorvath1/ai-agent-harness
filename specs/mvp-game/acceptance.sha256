@@ -1,0 +1,12 @@
+5e58cddc8a1fdc8d56b0f930cded1f24c4f20594333e2f48efd151a41dd07fb6  tests/acceptance/mvp-game/frame.test.ts
+bb6216354e000d6da1da5b8703cb414c8dd483f04a880bdc6c09eb3406619828  tests/acceptance/mvp-game/keys.test.ts
+f0c2fdb133d8d1cf7c61ad9ede8d724b549974c7d8e9ba8de9a98ed7b19e2f5b  tests/acceptance/mvp-game/loss.test.ts
+6c3ceb9e7567b0605be25aadbd9308328fd26dab62b639f202cdec76c890a72d  tests/acceptance/mvp-game/no-op.test.ts
+bb644f9beb9f40e5a147a3a0041bd15af107e17adeee591734648ce4b289ae18  tests/acceptance/mvp-game/re-homed.test.ts
+8d95aee31dfa2c622e8ce1e33ea358bc7011e8acbc9e6817f0d167746c158dfa  tests/acceptance/mvp-game/retirement.test.ts
+b08bd10a8a527dc0e3638e5bc9fadd5f0d4a9e3fc719122ea8dfaed5b66a4fec  tests/acceptance/mvp-game/score.test.ts
+3f314b95573dd89c98cdace35c61da6f417a07e3e0472540698747555ddd14fa  tests/acceptance/mvp-game/slide-merge.test.ts
+de8857221718024976ba954216ac98660f18d99864ab7f74d7f2c0597db8df13  tests/acceptance/mvp-game/spawn.test.ts
+7fe436ec10c53310c9efc99fafed183d0e3f23610791d1eca0e3cb0cde7a9fe3  tests/acceptance/mvp-game/support.ts
+ba17e087d5c18ecda615a8b16ec5d803d5f027e7b3ff0078538718e1b60a2fbb  tests/acceptance/mvp-game/unchanged.test.ts
+a536e1954f1a53b45d8dc585d26a687b3b16f47874ba7400afa9a0bbef3361cd  tests/acceptance/mvp-game/win.test.ts
