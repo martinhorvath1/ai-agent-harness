@@ -41,7 +41,9 @@ Keep your own context lean: rely on the files in specs/$ARGUMENTS/ rather than l
      specs/$ARGUMENTS/survivors.md yourself: one line per surviving mutant (location, mutant,
      verdict), carrying forward only EQUIVALENT/UNTESTABLE/ACCEPTED verdicts that still hold.
    - Re-run ./scripts/quality-gate.sh full. It must pass. Commit:
-     "test($ARGUMENTS): hardening tests".
+     "test($ARGUMENTS): hardening tests". The hardener's tests are
+     tests/unit/*.mutation.test.ts — they sit beside the unit tests they reinforce, and are
+     locked by specs/$ARGUMENTS/hardening.sha256 rather than by living in a tree of their own.
 
 4. Review: use the reviewer subagent. Your delegation message must contain ONLY:
    "Feature slug: $ARGUMENTS. Branch: feat/$ARGUMENTS."

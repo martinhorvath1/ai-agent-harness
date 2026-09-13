@@ -1,2 +1,2 @@
-258babdd7d59198195dc220530051e486cf0b360db77055099a6d2be960d31df  tests/hardening/baseline/new-game.hardening.test.ts
-468b66d30f910ba0223038f3cf2f2e9a0225efe6b9150fd82669931573ac27db  tests/hardening/baseline/registry.hardening.test.ts
+02af92fa16c90eb9ca065cacffa5b6ee06b8b1e66ac7615867888b84b2a5e056  tests/unit/new-game.mutation.test.ts
+0e7fc7d481aae971f0d9de0cfc41a25db2d1fdb2b57e49dce032d355e9da722a  tests/unit/registry.mutation.test.ts

@@ -12,8 +12,10 @@
 #
 # Every writing agent owns exactly one category of files, and no agent grades its own work:
 #   qa          owns tests/acceptance/<slug>/
-#   implementer owns src/ and tests/unit/
-#   hardener    owns tests/hardening/<slug>/
+#   implementer owns src/ and tests/unit/, EXCEPT tests/unit/*.mutation.test.ts
+#   hardener    owns tests/unit/*.mutation.test.ts -- mutation-killing tests live beside the
+#               unit tests of the same module, not in a tree of their own; ownership is by
+#               filename suffix so the hook can still enforce it
 #   gate configuration (scripts/, .claude/, pipeline.config, lint/ts/vitest/stryker/
 #   dependency-cruiser configs, package.json, lockfiles, *.sha256) is owned by humans only.
 #
@@ -46,16 +48,24 @@ GATE_FILES = [
 
 # Files each role must not touch, on top of GATE_FILES.
 ROLE_FILES = {
-    "implementer": ["tests/acceptance/", "tests/hardening/"],
+    "implementer": ["tests/acceptance/", "*.mutation.test.ts"],
     "hardener":    ["src/", "tests/unit/", "tests/acceptance/"],
-    "qa":          ["src/", "tests/unit/", "tests/hardening/"],
+    "qa":          ["src/", "tests/unit/", "*.mutation.test.ts"],
+}
+
+# Carve-outs checked BEFORE the deny list: hardening tests sit inside a directory the hardener is
+# otherwise locked out of, so the suffix has to win over "tests/unit/". Written as
+# <dir>/*<suffix> and matched as both, so the carve-out cannot be used to reach outside the
+# unit test directory.
+ROLE_ALLOW = {
+    "hardener": ["tests/unit/*.mutation.test.ts"],
 }
 
 OWNER = {
-    "tests/acceptance/": "QA",
-    "tests/hardening/":  "the hardener",
-    "src/":              "the implementer",
-    "tests/unit/":       "the implementer",
+    "tests/acceptance/":   "QA",
+    "*.mutation.test.ts":  "the hardener",
+    "src/":                "the implementer",
+    "tests/unit/":         "the implementer",
 }
 
 if role not in ROLE_FILES:
@@ -64,6 +74,7 @@ if role not in ROLE_FILES:
     sys.exit(2)
 
 PROTECTED = GATE_FILES + ROLE_FILES[role]
+ALLOWED = ROLE_ALLOW.get(role, [])
 
 ADVICE = ("Stop and report what you need changed and why. Do not work around this block.")
 
@@ -107,6 +118,22 @@ def path_matches(path, pattern):
     return base == pattern
 
 
+def allow_matches(path, allow):
+    """True if `path` is a file the role is explicitly allowed to write."""
+    directory, _, suffix_glob = allow.rpartition("/")
+    norm = normalize(path)
+    return (norm.startswith(directory + "/")
+            and "/" not in norm[len(directory) + 1:]
+            and fnmatch.fnmatch(norm.rsplit("/", 1)[-1], suffix_glob))
+
+
+def allow_regex(allow):
+    """Regex matching a whole allowed path token inside a shell command."""
+    directory, _, suffix_glob = allow.rpartition("/")
+    return re.compile(re.escape(directory + "/")
+                      + r"[\w.-]*" + re.escape(suffix_glob.lstrip("*")))
+
+
 def command_regex(pattern):
     """Regex that finds a mention of `pattern` inside a shell command."""
     if pattern.endswith("/"):
@@ -138,6 +165,8 @@ ti = data.get("tool_input") or {}
 
 if tool in ("Edit", "Write", "MultiEdit", "NotebookEdit"):
     path = ti.get("file_path") or ti.get("notebook_path") or ""
+    if any(allow_matches(path, a) for a in ALLOWED):
+        sys.exit(0)
     for pattern in PROTECTED:
         if path_matches(path, pattern):
             block("writing %s is not allowed." % normalize(path), pattern)
@@ -145,9 +174,14 @@ if tool in ("Edit", "Write", "MultiEdit", "NotebookEdit"):
 elif tool == "Bash":
     cmd = ti.get("command", "")
 
+    # Remove whole path tokens the role is allowed to write, so that a command like
+    # `cat > tests/unit/grid.mutation.test.ts` no longer reads as a mention of tests/unit/.
+    for allow in ALLOWED:
+        cmd = allow_regex(allow).sub("", cmd)
+
     if RELOCK_HARDENING.search(cmd):
         if role != "hardener":
-            block("re-locking hardening tests is not allowed.", "tests/hardening/")
+            block("re-locking hardening tests is not allowed.", "*.mutation.test.ts")
     elif RELOCK.search(cmd):
         if role != "qa":
             block("re-locking acceptance tests is not allowed.", "tests/acceptance/")

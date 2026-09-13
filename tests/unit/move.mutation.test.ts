@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { applyMove } from '../../../src/core/rules/move.js';
-import type { Board } from '../../../src/core/model/board.js';
+import { applyMove } from '../../src/core/rules/move.js';
+import type { Board } from '../../src/core/model/board.js';
 
 // Kills id343 (column index arithmetic row * BOARD_SIZE + col -> - col): the existing unit
 // tests only exercise column 0, where +col and -col coincide (both zero). Column 1 tells

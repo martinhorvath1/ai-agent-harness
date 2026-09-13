@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { nextState } from '../../../src/core/game/turn.js';
-import type { GameState } from '../../../src/core/model/game-state.js';
-import type { Board } from '../../../src/core/model/board.js';
-import type { RandomSource } from '../../../src/core/model/random-source.js';
+import { nextState } from '../../src/core/game/turn.js';
+import type { GameState } from '../../src/core/model/game-state.js';
+import type { Board } from '../../src/core/model/board.js';
+import type { RandomSource } from '../../src/core/model/random-source.js';
 
 function sequence(values: readonly number[]): RandomSource {
   let index = 0;

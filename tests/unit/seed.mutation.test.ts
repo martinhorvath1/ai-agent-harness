@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { seededRandom } from '../../../src/core/rules/seed.js';
+import { seededRandom } from '../../src/core/rules/seed.js';
 
 // Kills id460/id461 (the +/- arithmetic inside the mulberry32 state update and mix steps):
 // `seededRandom`'s doc comment names the exact algorithm (mulberry32), so its output for a

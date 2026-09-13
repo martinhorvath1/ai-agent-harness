@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { hasLegalMove } from '../../../src/core/rules/outcome.js';
-import type { Board } from '../../../src/core/model/board.js';
+import { hasLegalMove } from '../../src/core/rules/outcome.js';
+import type { Board } from '../../src/core/model/board.js';
 
 // Kills id393 (right-neighbour index arithmetic index+1 -> index-1): the only real
 // adjacent-equal pair in this board is horizontal at (row 0, col 2)-(row 0, col 3).

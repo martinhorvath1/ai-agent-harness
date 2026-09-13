@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { run } from '../../../src/core/index.js';
+import { run } from '../../src/core/index.js';
 
 function fixedRandom(): number {
   return 0.5;

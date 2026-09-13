@@ -22,6 +22,7 @@ Read:
 Run:
 - ./scripts/acceptance-lock.sh verify <slug>            (acceptance tests must be untouched)
 - ./scripts/acceptance-lock.sh verify-hardening <slug>  (skip if no hardening.sha256 exists yet)
+- ./scripts/acceptance-lock.sh unclaimed-hardening       (any tests/unit/*.mutation.test.ts nobody locked)
 - ./scripts/quality-gate.sh full
 
 Review for:

@@ -27,8 +27,9 @@
                     runs that, and no agent deletes anything under specs/.
 - reports/   generated output (mutation, feature envy); gitignored, never committed
 - tests/acceptance/<feature>/   acceptance tests (QA-owned, locked)
-- tests/unit/   unit tests (implementer-owned)
-- tests/hardening/<feature>/   mutation-killing tests (hardener-owned, locked)
+- tests/unit/   unit tests (implementer-owned), plus the hardener's mutation-killing
+                tests as <module>.mutation.test.ts beside the unit tests of the same
+                module (hardener-owned, locked)
 - scripts/   pipeline tooling; do not modify during feature work
 
 ## Layer map
@@ -38,8 +39,7 @@ Dependencies point one way only. `.dependency-cruiser.cjs` enforces every arrow 
 
 ```
   tests/acceptance/ ─────────────────┐      (may import ONLY core/index.ts and cli/render.ts)
-  tests/hardening/  ─────────────────┤      (may import any src/ file a mutant lives in)
-  tests/unit/       ─────────────────┤
+  tests/unit/       ─────────────────┤      (may import any src/ file, mutation tests included)
                                      │
   src/cli/  ──────────────────────────► src/core/index.ts      the public API
    main.ts, render.ts, keys.ts               │
@@ -66,7 +66,7 @@ The rules, by name, so you can read a failure message:
 | `rules-below-game` | `rules/` never imports `game/`; `game/` sits above it |
 | `only-index-imports-game-publicly` | internals never import the barrel; that is backwards |
 | `cli-uses-public-api` | the shell imports `core/index.ts`, never a core internal |
-| `acceptance-tests-use-public-api` | acceptance tests prove behaviour, not internals. Hardening tests are exempt: a mutant can live in a file the public API never re-exports, and locking the hardener out of it produces false `UNTESTABLE` verdicts rather than better tests |
+| `acceptance-tests-use-public-api` | acceptance tests prove behaviour, not internals. Unit tests — mutation-killing ones included — import `src/` directly, because a mutant can live in a file the public API never re-exports, and locking the hardener out of it produces false `UNTESTABLE` verdicts rather than better tests |
 
 `.dependency-cruiser.cjs` is human-owned. Agents propose rules; they never edit it.
 
@@ -90,11 +90,14 @@ The rules, by name, so you can read a failure message:
   than disabling the rule.
 
 ## Testing
-- Vitest. Tests live in `tests/unit/`, `tests/acceptance/`, and `tests/hardening/`,
-  named `*.test.ts`. All three are discovered by `vitest.config.ts` and all three are run by
-  the fast quality gate and by Stryker.
+- Vitest. Tests live in `tests/unit/` and `tests/acceptance/`, named `*.test.ts`. Both are
+  discovered by `vitest.config.ts` and both are run by the fast quality gate and by Stryker.
+- The hardener's mutation-killing tests are `tests/unit/<module>.mutation.test.ts` — the same
+  kind of test as a unit test, on the same module, so they sit beside it rather than in a tree
+  of their own. The suffix marks ownership (the hook and the hardening lock key on it), not a
+  different kind of test; `npm run test:unit` runs them.
 - Run everything: `npm test`. Unit only: `npm run test:unit`. Acceptance only:
-  `npm run test:acceptance`. Hardening only: `npm run test:hardening`.
+  `npm run test:acceptance`. Mutation-killing tests only: `npm run test:hardening`.
 - A single file: `npx vitest run tests/unit/hello.test.ts`.
   A single test by name: `npx vitest run -t "greets the given name"`.
 - Coverage: `npm run coverage` (v8 provider, 80% lines/functions/branches/statements;
@@ -130,8 +133,8 @@ locks in the quality gate are the second line of defense.
 | Owner | May write |
 |-------|-----------|
 | qa | `tests/acceptance/<feature>/` (then locks it: `acceptance-lock.sh lock`) |
-| implementer | `src/`, `tests/unit/` |
-| hardener | `tests/hardening/<feature>/` (then locks it: `acceptance-lock.sh lock-hardening`) |
+| implementer | `src/`, `tests/unit/` — except `*.mutation.test.ts` |
+| hardener | `tests/unit/<module>.mutation.test.ts` (then locks them: `acceptance-lock.sh lock-hardening`) |
 | reviewer | nothing (read-only) |
 | humans only | `pipeline.config`, `scripts/`, `.claude/`, `eslint.config*`, `tsconfig*`, `vitest.config*`, `stryker.config*`, `.dependency-cruiser*`, `package.json`, `package-lock.json`, `*.sha256` |
 
@@ -139,9 +142,9 @@ No agent may install or remove dependencies. Scripts decide pass/fail; agents ne
 whether a gate passed.
 
 **Quality gate tiers.** Both must pass before work is called done:
-- `./scripts/quality-gate.sh` (fast, the default): lint, typecheck, **structure**, unit,
-  acceptance, hardening, coverage, CRAP, **placement**, **scenario traceability**,
-  acceptance locks. This is the implementer's loop.
+- `./scripts/quality-gate.sh` (fast, the default): lint, typecheck, **structure**, unit
+  (mutation-killing tests included), acceptance, coverage, CRAP, **placement**,
+  **scenario traceability**, acceptance locks. This is the implementer's loop.
 - `./scripts/quality-gate.sh full`: fast + mutation testing (`npx stryker run`) +
   **feature envy** (advisory) + hardening locks. Run by the orchestrator, the hardener, and
   the reviewer.

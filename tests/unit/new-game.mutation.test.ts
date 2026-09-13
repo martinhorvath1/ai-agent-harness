@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { newGame, type RandomSource } from '../../../src/core/index.js';
+import { newGame, type RandomSource } from '../../src/core/index.js';
 
 function sequence(values: readonly number[]): RandomSource {
   let index = 0;

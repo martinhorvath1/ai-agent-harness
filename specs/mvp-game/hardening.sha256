@@ -1,6 +1,6 @@
-bca9a6412a10f3209af2c8eeb804b4fab3bc8f5f0b9d0eca8fc46402594e6d9b  tests/hardening/mvp-game/frame.test.ts
-592424fbfd5a44ca1ff3b83b9139b40632f045159840cfe48c0063d3d25a131d  tests/hardening/mvp-game/grid.test.ts
-8292fa09dfeb21f24794201fc40466117fe60b55fa2d4b88c24aa994d8570357  tests/hardening/mvp-game/move.test.ts
-bfb93af26e1bb69dc744cc83e4b2d8863919296ceb87407bde97d4915fb958ab  tests/hardening/mvp-game/outcome.test.ts
-6e2fac6a2954917a142014ebe2236922ebbb7c637180f1639baf6d19f2102246  tests/hardening/mvp-game/seed.test.ts
-fa7504e36149b2a5901a318f8f8ab59ad5ca29d5657c7f43866e02d3b8b26027  tests/hardening/mvp-game/turn.test.ts
+4c9db8b8e9418796d4534d0649a145843beed659d4a45bc880cc0dcbc139dff3  tests/unit/frame.mutation.test.ts
+52e8e1753abfae9a9c86d2c5adb72e4200960a6d99074c656dd44fc8d657434a  tests/unit/grid.mutation.test.ts
+7c258b6be9df4d348f474c2065cce41cee56635f14fd872f7a17cd7ce7213faf  tests/unit/move.mutation.test.ts
+e54f44e2449238dc9d77af003475efba1b2e63eeebc54ecc3cadd9e5f19100e7  tests/unit/outcome.mutation.test.ts
+799174e046cccc8a1adbe3bfafa3d8b85877fc79d304e5d363f24f4a42c0b60a  tests/unit/seed.mutation.test.ts
+07753e3899a58428afa8ec44c40718bd5e617c28a83360527213a9c20c1dc406  tests/unit/turn.mutation.test.ts

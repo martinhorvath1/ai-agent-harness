@@ -21,7 +21,7 @@ context window and owns exactly one category of files. Handoffs happen through f
    2  implementer  ──► src/ + tests/unit/        ─► FAST gate  (orchestrator re-runs it) ─► commit
    3  harden       ──► FULL gate (mutation testing)
                          passes? ─────────────────► skip the hardener
-                         fails?  ─► hardener ──► tests/hardening/<slug>/ ─► locked
+                         fails?  ─► hardener ──► tests/unit/*.mutation.test.ts ─► locked
                                      └─ BUG / UNTESTABLE? ─► implementer ─► NEW hardener
                                         (max 2 rounds, then escalate to you)
                        ─► FULL gate (orchestrator re-runs it) ─► commit
@@ -102,9 +102,9 @@ problems.
 |------|-------|--------|------|--------------|
 | **scout** | sonnet | nothing (read-only) | — | everything; it only reports ambiguities |
 | **architect** | opus | `specs/<slug>/plan.md` (incl. the `## Module map`), `feature.feature` | — | no Bash, no code; proposes dependency rules, never edits `.dependency-cruiser.cjs` |
-| **qa** | sonnet | `tests/acceptance/<slug>/` | acceptance tests (must fail), `acceptance-lock.sh lock` | `src/`, `tests/unit/`, `tests/hardening/`, gate files, `lock-hardening`, dependency changes |
-| **implementer** | sonnet | `src/`, `tests/unit/` | `./scripts/quality-gate.sh` (fast) | `tests/acceptance/`, `tests/hardening/`, gate files, either lock command, dependency changes |
-| **hardener** | sonnet | `tests/hardening/<slug>/` | `./scripts/quality-gate.sh full`, `acceptance-lock.sh lock-hardening` | `src/`, `tests/unit/`, `tests/acceptance/`, gate files, `lock`, dependency changes |
+| **qa** | sonnet | `tests/acceptance/<slug>/` | acceptance tests (must fail), `acceptance-lock.sh lock` | `src/`, `tests/unit/`, gate files, `lock-hardening`, dependency changes |
+| **implementer** | sonnet | `src/`, `tests/unit/` except `*.mutation.test.ts` | `./scripts/quality-gate.sh` (fast) | `tests/acceptance/`, `tests/unit/*.mutation.test.ts`, gate files, either lock command, dependency changes |
+| **hardener** | sonnet | `tests/unit/<module>.mutation.test.ts` | `./scripts/quality-gate.sh full`, `acceptance-lock.sh lock-hardening` | `src/`, every other file in `tests/unit/`, `tests/acceptance/`, gate files, `lock`, dependency changes |
 | **reviewer** | opus (high effort) | nothing (read-only) | both lock verifies, `./scripts/quality-gate.sh full` | has no write tools at all |
 | **orchestrator** (`/build`) | your session | commits, `specs/<slug>/*.md` reports | both gate tiers itself | writing code or tests; merging; pushing |
 
@@ -128,9 +128,8 @@ The checksum locks are the second line of defense: even if a guard were bypassed
 |---|---|---|
 | lint, typecheck | ✅ | ✅ |
 | **structure** (dependency-cruiser) | ✅ required | ✅ required |
-| unit tests | ✅ | ✅ |
+| unit tests (incl. `*.mutation.test.ts`) | ✅ | ✅ |
 | acceptance tests | ✅ | ✅ |
-| hardening tests | ✅ | ✅ |
 | coverage (80%) | ✅ | ✅ |
 | CRAP score (max 8) | ✅ | ✅ |
 | **placement** (module map) | ✅ when `specs/<slug>/plan.md` exists | ✅ same |
@@ -141,8 +140,8 @@ The checksum locks are the second line of defense: even if a guard were bypassed
 | hardening locks | — | ✅ |
 | **who runs it** | implementer (its loop), orchestrator after stage 2 | orchestrator (stage 3, stage 5), hardener, reviewer |
 
-Hardening tests run in **both** tiers on purpose: the implementer finds out immediately when a
-change breaks one, instead of at the end of the run. The structural checks run in both tiers for
+Hardening tests run in **both** tiers on purpose: they are part of `tests/unit/`, so the
+implementer finds out immediately when a change breaks one, instead of at the end of the run. The structural checks run in both tiers for
 the same reason: a layering violation is as much a defect as a failing test.
 
 ## Structural checks
@@ -220,7 +219,9 @@ lock stale; the gate will catch it, but you will have lost the audit trail.
 **"A hardening test is wrong."** Same rule. Re-lock with
 `./scripts/acceptance-lock.sh lock-hardening <slug>`. Be more willing to delete a hardening
 test than an acceptance test: a hardening test that pins an implementation detail is a real
-defect, and the reviewer is told to flag exactly that.
+defect, and the reviewer is told to flag exactly that. If you delete the last
+`*.mutation.test.ts` a slug owned, delete its `specs/<slug>/hardening.sha256` too — an empty
+lock is not a thing `lock-hardening` will write.
 
 **"The module map is wrong."** The implementer put a file somewhere the plan did not name, and
 the placement check failed. This is expected and allowed — but it must be reported, not hidden.
@@ -260,12 +261,13 @@ Everything for one feature lives in `specs/<slug>/`:
 | `feature.feature` | architect | Gherkin scenarios, each tagged `@D<n>` |
 | `APPROVED` | you, via `/plan` | `/build` refuses to start without it |
 | `acceptance.sha256` | `acceptance-lock.sh lock` | checksums of `tests/acceptance/<slug>/` |
-| `hardening.sha256` | `acceptance-lock.sh lock-hardening` | checksums of `tests/hardening/<slug>/` |
+| `hardening.sha256` | `acceptance-lock.sh lock-hardening` | checksums of the `tests/unit/*.mutation.test.ts` files this slug wrote |
 | `survivors.md` | orchestrator, at the end of `/build` step 3 | the mutants nobody killed and why; a future hardener reads it first |
 | `hardening.md` | orchestrator, from the hardener | mutation score, tests added, classified survivors |
 | `review-1.md`, `review-2.md`, … | orchestrator, from each reviewer | one per review round, verbatim |
 
-Tests live outside `specs/`: `tests/acceptance/<slug>/` and `tests/hardening/<slug>/`.
+Tests live outside `specs/`: `tests/acceptance/<slug>/`, and `tests/unit/` for unit tests and
+the hardener's `<module>.mutation.test.ts` files alike.
 The feature-envy report is generated output, not spec: it lands in `reports/placement/<slug>.md`,
 which is gitignored.
 

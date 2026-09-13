@@ -2,9 +2,10 @@
 # The "physical barrier". Exit 0 only if every configured check passes.
 # Configure the commands in pipeline.config.
 #
-#   ./scripts/quality-gate.sh [fast]   lint, typecheck, structure, unit, acceptance, hardening,
-#                                      coverage, CRAP, placement, scenario coverage,
-#                                      acceptance locks
+#   ./scripts/quality-gate.sh [fast]   lint, typecheck, structure, unit, acceptance, coverage,
+#                                      CRAP, placement, scenario coverage, acceptance locks
+#                                      (the unit run covers the hardener's
+#                                      tests/unit/*.mutation.test.ts too)
 #                                      (the implementer's loop)
 #   ./scripts/quality-gate.sh full     fast + mutation testing + feature envy + hardening locks
 #                                      (the orchestrator, the hardener, and the reviewer)
@@ -20,7 +21,6 @@ case "$mode" in
 esac
 
 # Optional commands that an older pipeline.config may not define at all.
-HARDENING_TEST_CMD="${HARDENING_TEST_CMD:-}"
 MUTATION_CMD="${MUTATION_CMD:-}"
 DEPS_CMD="${DEPS_CMD:-}"
 
@@ -66,7 +66,6 @@ run "typecheck"        "$TYPECHECK_CMD"       optional
 run "structure"        "$DEPS_CMD"            required
 run "unit tests"       "$UNIT_TEST_CMD"       required
 run "acceptance tests" "$ACCEPTANCE_TEST_CMD" required
-run "hardening tests"  "$HARDENING_TEST_CMD"  optional
 run "coverage"         "$COVERAGE_CMD"        optional
 run "CRAP score"       "$CRAP_CMD"            optional
 
@@ -109,9 +108,16 @@ fi
 # Every locked feature's acceptance tests must be untouched.
 verify_locks acceptance.sha256 verify acceptance
 
-# Hardening tests are locked by the hardener; only the full tier checks them.
+# Hardening tests are locked by the hardener; only the full tier checks them. The locks cover
+# tests/unit/*.mutation.test.ts, so the second check catches a mutation test that was written
+# but never locked -- which a per-slug verify cannot see.
 if [[ "$mode" == full ]]; then
   verify_locks hardening.sha256 verify-hardening hardening
+  if ./scripts/acceptance-lock.sh unclaimed-hardening >/dev/null 2>&1; then
+    results+=("PASS  hardening lock: every mutation test is claimed")
+  else
+    results+=("FAIL  hardening lock: mutation tests exist that no slug has locked"); fail=1
+  fi
 fi
 
 echo "================ quality gate ($mode) ================"

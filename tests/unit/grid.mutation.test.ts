@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { renderGrid } from '../../../src/core/rules/grid.js';
-import type { Board } from '../../../src/core/model/board.js';
+import { renderGrid } from '../../src/core/rules/grid.js';
+import type { Board } from '../../src/core/model/board.js';
 
 const EMPTY_BOARD: Board = new Array(16).fill(null);
 

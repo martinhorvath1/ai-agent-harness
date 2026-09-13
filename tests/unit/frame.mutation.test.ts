@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { renderFrame } from '../../../src/core/rules/frame.js';
-import type { Board } from '../../../src/core/model/board.js';
-import type { GameState } from '../../../src/core/model/game-state.js';
+import { renderFrame } from '../../src/core/rules/frame.js';
+import type { Board } from '../../src/core/model/board.js';
+import type { GameState } from '../../src/core/model/game-state.js';
 
 const EMPTY_BOARD: Board = new Array(16).fill(null);
 
