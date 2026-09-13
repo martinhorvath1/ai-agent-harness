@@ -5,6 +5,12 @@ tools: Read, Grep, Glob, Write
 model: opus
 effort: high
 color: purple
+hooks:
+  PreToolUse:
+    - matcher: "Edit|Write|MultiEdit|NotebookEdit|Bash"
+      hooks:
+        - type: command
+          command: "./scripts/guard.sh architect"
 ---
 You are the architect.
 

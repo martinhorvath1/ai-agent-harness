@@ -4,6 +4,12 @@ description: Turns approved Gherkin scenarios into executable, failing acceptanc
 tools: Read, Grep, Glob, Write, Edit, Bash
 model: sonnet
 color: yellow
+hooks:
+  PreToolUse:
+    - matcher: "Edit|Write|MultiEdit|NotebookEdit|Bash"
+      hooks:
+        - type: command
+          command: "./scripts/guard.sh qa"
 ---
 You are QA. You write acceptance tests that prove behavior, independent of how it will be built.
 

@@ -11,6 +11,7 @@
 # Reads the hook JSON on stdin. Exit 0 = allow, exit 2 = block (stderr goes to the agent).
 #
 # Every writing agent owns exactly one category of files, and no agent grades its own work:
+#   architect   owns specs/<slug>/ -- it has a Write tool, so it needs a guard like the rest
 #   qa          owns tests/acceptance/<slug>/
 #   implementer owns src/ and tests/unit/, EXCEPT tests/unit/*.mutation.test.ts
 #   hardener    owns tests/unit/*.mutation.test.ts -- mutation-killing tests live beside the
@@ -25,7 +26,7 @@ cd "$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 
 role="${1:-}"
 if [[ -z "$role" ]]; then
-  echo "guard.sh: usage: $0 <implementer|hardener|qa>" >&2
+  echo "guard.sh: usage: $0 <architect|implementer|hardener|qa>" >&2
   exit 2
 fi
 
@@ -48,6 +49,7 @@ GATE_FILES = [
 
 # Files each role must not touch, on top of GATE_FILES.
 ROLE_FILES = {
+    "architect":   ["src/", "tests/"],
     "implementer": ["tests/acceptance/", "*.mutation.test.ts"],
     "hardener":    ["src/", "tests/unit/", "tests/acceptance/"],
     "qa":          ["src/", "tests/unit/", "*.mutation.test.ts"],
@@ -62,6 +64,7 @@ ROLE_ALLOW = {
 }
 
 OWNER = {
+    "tests/":              "QA, the implementer and the hardener",
     "tests/acceptance/":   "QA",
     "*.mutation.test.ts":  "the hardener",
     "src/":                "the implementer",

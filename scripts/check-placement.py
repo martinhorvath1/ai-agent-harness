@@ -5,7 +5,13 @@ Usage: ./scripts/check-placement.py <feature-slug>
 
 The architect declares, in specs/<slug>/plan.md under "## Module map", every file the
 feature will touch. This compares that declaration against what actually changed on the
-branch (`git diff main...HEAD`).
+branch, working tree included: committed changes, unstaged edits, and new untracked files
+alike.
+
+Including the working tree is the whole point. The implementer runs the fast gate in a loop
+and never commits -- the orchestrator does that, after the gate is already green. A check that
+looked only at `main...HEAD` would see nothing on every one of those iterations, pass
+vacuously, and report every planned file as "never touched".
 
 FAIL (exit 1):
   - a changed or added file under src/ is not listed in the module map
@@ -35,22 +41,39 @@ def run_git(*args):
     return result.stdout
 
 
+def is_source(path):
+    return path.startswith("src/") and path.endswith(".ts")
+
+
 def changed_src_files():
-    """Files added or modified under src/ on this branch, relative to BASE."""
+    """Files added or modified under src/ on this branch, working tree included.
+
+    Two sources, because neither alone is enough:
+      - `git diff <merge-base>` (no HEAD) covers committed AND uncommitted changes to
+        tracked files, which is what the implementer has mid-loop;
+      - `git ls-files --others` covers brand-new files git has never seen, which is what
+        most of a feature looks like on its first iteration.
+    """
     merge_base = run_git("merge-base", BASE, "HEAD")
     if merge_base is None:
         return None
-    out = run_git("diff", "--name-status", merge_base.strip(), "HEAD")
+    out = run_git("diff", "--name-status", merge_base.strip())
     if out is None:
         return None
+
     files = []
     for line in out.splitlines():
         parts = line.split("\t")
         status, path = parts[0], parts[-1]
         if status.startswith("D"):
             continue
-        if path.startswith("src/") and path.endswith(".ts"):
+        if is_source(path):
             files.append(path)
+
+    untracked = run_git("ls-files", "--others", "--exclude-standard")
+    if untracked:
+        files.extend(p for p in untracked.split() if is_source(p))
+
     return sorted(set(files))
 
 

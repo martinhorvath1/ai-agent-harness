@@ -108,9 +108,14 @@ The rules, by name, so you can read a failure message:
 - CRAP score: `python3 scripts/crap.py --max 8` (reads `coverage/coverage-final.json`, so run
   the coverage command first). `--top 0` lists every function; `--json` for machine output.
 - Mutation testing: `npm run mutation` (StrykerJS; config in `stryker.config.json`, break
-  threshold 75). It mutates `src/**` except `src/cli/main.ts`, and writes
+  threshold 75, high threshold 90). It mutates `src/**` except `src/cli/main.ts`, and writes
   `reports/mutation/mutation.json` for agents to parse plus an HTML report beside it.
   Runs are incremental (`.stryker-tmp/incremental.json`); delete that file for a clean run.
+- Whether a hardening round is warranted is a separate question from whether the branch ships,
+  so it has its own answer: `./scripts/needs-hardening.py <slug>` (exit 0 run, 1 skip, 2 no
+  report yet). `break` decides ship/no-ship. This says yes when the score is under the *high*
+  threshold, or when any surviving mutant lives in a `src/` file the branch changed — a feature
+  can clear 75 comfortably and still ship code nothing pins down.
 - Structural rules: `npx depcruise src tests --config .dependency-cruiser.cjs` (both tiers).
 - Placement: `./scripts/check-placement.py <slug>` (fast tier, when `specs/<slug>/plan.md` exists).
 - Scenario traceability: `./scripts/check-scenarios.py <slug>` (fast tier, when

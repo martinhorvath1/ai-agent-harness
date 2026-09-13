@@ -33,9 +33,11 @@ module.exports = {
       comment: "The shell may only use core's public API.",
       from: { path: "^src/cli/" }, to: { path: "^src/core/", pathNot: "^src/core/index\\.ts$" } },
     { name: "acceptance-tests-use-public-api", severity: "error",
-      comment: "Acceptance tests prove behavior, not internals. Hardening tests are exempt: "
-        + "a mutant can live in a file the public API never re-exports, and locking the "
-        + "hardener out of it produces false UNTESTABLE verdicts instead of better tests.",
+      comment: "Acceptance tests prove behavior, not internals. This rule binds only "
+        + "tests/acceptance/: unit tests, including the hardener's *.mutation.test.ts, "
+        + "import src/ directly, because a mutant can live in a file the public API "
+        + "never re-exports, and locking the hardener out of it produces false "
+        + "UNTESTABLE verdicts instead of better tests.",
       from: { path: "^tests/acceptance/" },
       to: { path: "^src/", pathNot: ["^src/core/index\\.ts$", "^src/cli/render\\.ts$"] } },
   ],

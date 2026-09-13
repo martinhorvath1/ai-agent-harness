@@ -12,7 +12,18 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git switch:*)",
-      "Bash(git checkout -b:*)"
+      "Bash(git checkout -b:*)",
+      "Bash(./scripts/check-placement.py:*)",
+      "Bash(./scripts/check-scenarios.py:*)",
+      "Bash(./scripts/needs-hardening.py:*)",
+      "Bash(npx depcruise:*)",
+      "Bash(npx vitest run:*)",
+      "Bash(npx tsc --noEmit)",
+      "Bash(npx eslint:*)",
+      "Bash(npx tsx scripts/feature-envy.ts)",
+      "Bash(python3 scripts/crap.py:*)",
+      "Bash(npm test)",
+      "Bash(npm run:*)"
     ],
     "deny": [
       "Bash(git push:*)"

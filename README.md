@@ -19,9 +19,9 @@ context window and owns exactly one category of files. Handoffs happen through f
    0  preconditions ── APPROVED, check-spec, clean tree, branch feat/<slug>
    1  qa           ──► tests/acceptance/<slug>/  ─► locked ─► must FAIL ─► commit
    2  implementer  ──► src/ + tests/unit/        ─► FAST gate  (orchestrator re-runs it) ─► commit
-   3  harden       ──► FULL gate (mutation testing)
-                         passes? ─────────────────► skip the hardener
-                         fails?  ─► hardener ──► tests/unit/*.mutation.test.ts ─► locked
+   3  harden       ──► FULL gate (mutation testing) ─► needs-hardening.py decides
+                         skip? ───────────────────► straight to review
+                         run?  ─► hardener ──► tests/unit/*.mutation.test.ts ─► locked
                                      └─ BUG / UNTESTABLE? ─► implementer ─► NEW hardener
                                         (max 2 rounds, then escalate to you)
                        ─► FULL gate (orchestrator re-runs it) ─► commit

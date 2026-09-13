@@ -23,9 +23,12 @@ Keep your own context lean: rely on the files in specs/$ARGUMENTS/ rather than l
    When green, commit: "feat($ARGUMENTS): implementation".
 
 3. Harden: run ./scripts/quality-gate.sh full yourself.
-   - If it passes (mutation score already above the break threshold), skip the hardener
-     entirely and go to step 4.
-   - If it fails, use the hardener subagent with the slug. Its response is a verbatim report,
+   - If it fails on anything other than mutation testing, that is the implementer's problem:
+     send the failing output back (resume it) as in step 2, then re-run the full gate.
+   - Then run ./scripts/needs-hardening.py $ARGUMENTS. It decides whether a round is
+     warranted; you do not. Exit 1 means SKIP -- go to step 4. Exit 2 means the mutation
+     report is missing -- re-run the full gate. Exit 0 means RUN:
+     use the hardener subagent with the slug. Its response is a verbatim report,
      not a summary — save it as specs/$ARGUMENTS/hardening.md (append as a new "Round N" section
      if the file already exists from a previous round).
      - If the report contains a BUG finding: resume the implementer with the exact BUG entries

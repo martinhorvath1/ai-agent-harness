@@ -10,7 +10,7 @@ hooks:
     - matcher: "Edit|Write|MultiEdit|NotebookEdit|Bash"
       hooks:
         - type: command
-          command: "./scripts/guard-acceptance.sh"
+          command: "./scripts/guard.sh implementer"
 ---
 You are the implementer.
 
